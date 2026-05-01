@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#2f5a3b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Market Kiosk" />
+    <meta
+      name="description"
+      content="A touch-friendly kiosk and order queue app for a farmer's market stand."
+    />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/icon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      #order-queue .order-card,
+      #order-queue .order-card p,
+      #order-queue .order-card span,
+      #order-queue .order-card strong,
+      #order-queue .order-card li,
+      #order-queue .order-card .item-copy,
+      #order-queue .order-card .item-meta,
+      #order-queue .order-card .item-modifier-meta,
+      #order-queue .order-card .order-number,
+      #order-queue .order-card .order-title,
+      #order-queue .order-card .order-total-minimal,
+      #order-queue .order-card .customer-note-block p {
+        color: #f3e8d9 !important;
+        opacity: 1 !important;
+        text-shadow: none !important;
+      }
+
+      #order-queue .order-card .timestamp-chip {
+        color: #b9ddc0 !important;
+        opacity: 1 !important;
+        text-shadow: none !important;
+      }
+
+      #order-queue .order-card .order-total-minimal {
+        color: #ccb59a !important;
+      }
+
+      #order-queue .order-card .item-complete-button {
+        color: #b9ddc0 !important;
+      }
+
+      #order-queue .order-card .order-item-row,
+      #order-queue .order-card .customer-note-block,
+      #order-queue .order-card .order-meta {
+        opacity: 1 !important;
+      }
+    </style>
+    <title>Market Kiosk</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <nav class="tab-bar" aria-label="Primary">
+        <button class="tab-button is-active" data-screen="order-entry" type="button">
+          Order Entry
+        </button>
+        <button class="tab-button" data-screen="order-queue" type="button">
+          Queue
+        </button>
+        <button class="tab-button" data-screen="payments" type="button">
+          Payments
+        </button>
+      </nav>
+
+      <main class="screen-wrap">
+        <section class="screen is-active" id="order-entry" aria-labelledby="order-entry-heading">
+          <div class="screen-panel hero-card">
+            <div class="hero-topline">
+              <div class="hero-copy">
+                <p class="section-kicker">New Order</p>
+              </div>
+              <div class="hero-stats">
+                <div class="stat-pill">
+                  <span class="stat-label">Next Order</span>
+                  <strong id="nextOrderNumber">#101</strong>
+                </div>
+              </div>
+            </div>
+            <div class="hero-field-grid">
+              <label class="field hero-field">
+                <span>Name</span>
+                <input id="customerName" type="text" maxlength="40" placeholder="Optional" />
+              </label>
+              <label class="field hero-field">
+                <span>Notes</span>
+                <textarea
+                  id="orderNotes"
+                  rows="1"
+                  maxlength="180"
+                  placeholder="Optional"
+                ></textarea>
+              </label>
+            </div>
+          </div>
+
+          <section class="screen-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Menu</p>
+              </div>
+            </div>
+            <div class="menu-jump-bar" id="menuJumpBar"></div>
+            <div class="menu-sections" id="menuSections"></div>
+          </section>
+
+          <section class="sticky-submit">
+            <div class="total-block">
+              <span>Running Total</span>
+              <strong id="submitTotal">$0.00</strong>
+            </div>
+            <button class="primary-button submit-button" id="reviewOrderButton" type="button">
+              Review Order
+            </button>
+          </section>
+        </section>
+
+        <section class="screen" id="order-queue" aria-labelledby="order-queue-heading">
+          <section class="screen-panel summary-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Summary</p>
+              </div>
+            </div>
+            <div class="summary-grid">
+              <div class="summary-card">
+                <span>Active Orders</span>
+                <strong id="activeOrderCount">0</strong>
+              </div>
+            </div>
+            <button class="secondary-button totals-toggle-button" id="totalsToggleButton" type="button">
+              Show Total Item Counts
+            </button>
+            <div class="totals-dropdown" id="totalsDropdown" hidden></div>
+          </section>
+
+          <section class="screen-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Active Order Queue</p>
+              </div>
+            </div>
+            <div id="queueList" class="queue-list"></div>
+          </section>
+        </section>
+
+        <section class="screen" id="payments" aria-labelledby="payments-heading">
+          <section class="screen-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Payments</p>
+              </div>
+            </div>
+            <div class="payment-button-grid" id="paymentButtons"></div>
+            <div class="payment-display" id="paymentDisplay"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <section class="review-sheet" id="reviewSheet" hidden aria-labelledby="reviewSheetHeading">
+      <div class="review-sheet-backdrop" id="reviewSheetBackdrop"></div>
+      <div class="review-sheet-panel">
+        <div class="review-sheet-header">
+          <div>
+            <p class="section-kicker">Review</p>
+            <h2 id="reviewSheetHeading">Order Summary</h2>
+          </div>
+          <button class="secondary-button review-close-button" id="closeReviewButton" type="button">
+            Close
+          </button>
+        </div>
+        <div class="review-sheet-body">
+          <div class="review-meta" id="reviewMeta"></div>
+          <ul class="review-item-list" id="reviewItemList"></ul>
+        </div>
+        <div class="review-sheet-footer">
+          <div class="total-block">
+            <span>Total</span>
+            <strong id="reviewTotal">$0.00</strong>
+          </div>
+          <button class="primary-button submit-button" id="submitOrderButton" type="button">
+            Submit Order
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <template id="menuItemTemplate">
+      <article class="menu-card" role="button" tabindex="0">
+        <div class="menu-card-copy">
+          <h3 class="menu-item-name"></h3>
+          <p class="menu-item-price"></p>
+        </div>
+        <div class="quantity-control" aria-label="Quantity selector">
+          <button class="quantity-button decrement-button" type="button" aria-label="Decrease">
+            -
+          </button>
+          <span class="quantity-value">0</span>
+        </div>
+      </article>
+    </template>
+
+    <template id="orderCardTemplate">
+      <article class="order-card">
+        <div class="order-card-top">
+          <div>
+            <p class="order-number"></p>
+            <h3 class="order-title"></h3>
+          </div>
+          <div class="order-meta">
+            <span class="timestamp-chip"></span>
+            <span class="order-total-minimal"></span>
+          </div>
+        </div>
+        <div class="customer-note-block"></div>
+        <ul class="order-item-list"></ul>
+        <button class="primary-button sent-out-button" type="button">Sent Out</button>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

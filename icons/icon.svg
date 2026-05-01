@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>Market Kiosk Icon</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3d734b" />
+      <stop offset="100%" stop-color="#264d34" />
+    </linearGradient>
+    <linearGradient id="crate" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5d39d" />
+      <stop offset="100%" stop-color="#d7a55d" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bg)" />
+  <circle cx="70" cy="78" r="24" fill="#d45b42" />
+  <circle cx="126" cy="68" r="20" fill="#efc14d" />
+  <circle cx="182" cy="82" r="25" fill="#f07d45" />
+  <path d="M82 70c6-15 23-24 42-24 19 0 36 9 46 25" fill="none" stroke="#d7efbf" stroke-linecap="round" stroke-width="10"/>
+  <rect x="46" y="110" width="164" height="92" rx="18" fill="url(#crate)" />
+  <path d="M46 138h164M46 166h164" stroke="#915f22" stroke-width="10" />
+  <path d="M76 116v80M128 116v80M180 116v80" stroke="#915f22" stroke-width="10" />
+  <path d="M108 130h40" stroke="#fff7ea" stroke-linecap="round" stroke-width="12" />
+</svg>

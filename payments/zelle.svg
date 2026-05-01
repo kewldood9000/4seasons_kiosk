@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Zelle Placeholder QR</title>
+  <desc id="desc">Placeholder payment image to replace with a real Zelle QR code.</desc>
+  <rect width="900" height="1200" rx="56" fill="#ffffff" />
+  <rect x="34" y="34" width="832" height="1132" rx="40" fill="#fbf7ff" stroke="#6d35d4" stroke-width="10" />
+  <text x="450" y="130" fill="#4d259d" font-family="Arial, sans-serif" font-size="56" font-weight="700" text-anchor="middle">Zelle</text>
+  <g fill="#111111">
+    <rect x="125" y="225" width="110" height="110" />
+    <rect x="265" y="225" width="55" height="55" />
+    <rect x="350" y="225" width="110" height="110" />
+    <rect x="490" y="280" width="55" height="55" />
+    <rect x="575" y="225" width="110" height="110" />
+    <rect x="715" y="225" width="55" height="55" />
+    <rect x="125" y="365" width="55" height="55" />
+    <rect x="210" y="365" width="110" height="110" />
+    <rect x="350" y="420" width="55" height="55" />
+    <rect x="435" y="365" width="110" height="110" />
+    <rect x="575" y="365" width="55" height="55" />
+    <rect x="660" y="365" width="110" height="110" />
+    <rect x="125" y="505" width="110" height="110" />
+    <rect x="265" y="560" width="55" height="55" />
+    <rect x="350" y="505" width="55" height="55" />
+    <rect x="435" y="560" width="55" height="55" />
+    <rect x="520" y="505" width="110" height="110" />
+    <rect x="660" y="560" width="110" height="110" />
+    <rect x="125" y="645" width="55" height="55" />
+    <rect x="210" y="700" width="55" height="55" />
+    <rect x="295" y="645" width="110" height="110" />
+    <rect x="435" y="645" width="110" height="110" />
+    <rect x="575" y="700" width="55" height="55" />
+    <rect x="660" y="645" width="110" height="110" />
+    <rect x="125" y="835" width="110" height="110" />
+    <rect x="265" y="835" width="55" height="55" />
+    <rect x="350" y="890" width="55" height="55" />
+    <rect x="435" y="835" width="110" height="110" />
+    <rect x="575" y="835" width="55" height="55" />
+    <rect x="660" y="890" width="110" height="55" />
+  </g>
+  <text x="450" y="1060" fill="#604a8f" font-family="Arial, sans-serif" font-size="34" text-anchor="middle">Replace this file with your real Zelle QR code</text>
+  <text x="450" y="1110" fill="#7b6b9f" font-family="Arial, sans-serif" font-size="28" text-anchor="middle">payments/zelle.svg</text>
+</svg>
