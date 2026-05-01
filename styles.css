@@ -1,16 +1,16 @@
 :root {
-  --bg: #16110d;
-  --bg-soft: #211913;
-  --panel: rgba(38, 29, 22, 0.94);
-  --panel-strong: #2a2119;
+  --bg: #130f0c;
+  --bg-soft: #1c1510;
+  --panel: rgba(33, 25, 19, 0.95);
+  --panel-strong: #241c16;
   --line: rgba(238, 219, 193, 0.1);
   --text: #f3e8d9;
   --muted: #ccb59a;
-  --green: #356947;
+  --green: #2f5d3f;
   --green-deep: #b9ddc0;
-  --green-soft: rgba(53, 105, 71, 0.26);
-  --accent: #c3673e;
-  --accent-soft: rgba(195, 103, 62, 0.2);
+  --green-soft: rgba(47, 93, 63, 0.26);
+  --accent: #b55d37;
+  --accent-soft: rgba(181, 93, 55, 0.2);
   --gold: #d1a548;
   --danger: #ea9180;
   --danger-soft: rgba(159, 59, 46, 0.22);
@@ -32,16 +32,27 @@ html {
   height: 100%;
   -webkit-text-size-adjust: 100%;
   color-scheme: dark;
+  background:
+    radial-gradient(circle at top left, rgba(96, 139, 103, 0.2), transparent 26%),
+    radial-gradient(circle at top right, rgba(195, 103, 62, 0.14), transparent 24%),
+    linear-gradient(180deg, #1d1611 0%, var(--bg) 45%, #201813 100%);
+  background-color: #201813;
+  overscroll-behavior-y: none;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
+  min-height: 100dvh;
   font-family: var(--font-body);
   color: var(--text);
   line-height: 1.4;
   overflow-x: hidden;
-  background: #201813;
+  background:
+    radial-gradient(circle at top left, rgba(96, 139, 103, 0.2), transparent 26%),
+    radial-gradient(circle at top right, rgba(195, 103, 62, 0.14), transparent 24%),
+    linear-gradient(180deg, #1d1611 0%, var(--bg) 45%, #201813 100%);
+  background-color: #201813;
+  background-repeat: no-repeat;
 }
 
 button,
@@ -54,12 +65,19 @@ select {
 button {
   cursor: pointer;
   border: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app-shell {
   width: min(100%, 860px);
   margin: 0 auto;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding:
     calc(8px + var(--safe-top))
     16px
@@ -147,7 +165,7 @@ button {
   display: grid;
   gap: 16px;
   background:
-    linear-gradient(135deg, rgba(47, 90, 59, 0.94), rgba(59, 112, 75, 0.86)),
+    linear-gradient(135deg, rgba(41, 78, 52, 0.95), rgba(50, 98, 65, 0.87)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 42%);
   color: #fffef8;
 }
@@ -1019,6 +1037,27 @@ code {
   border: 1px solid rgba(185, 221, 192, 0.12);
 }
 
+.payment-missing {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px dashed rgba(185, 221, 192, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}
+
+.payment-missing strong {
+  color: var(--text);
+}
+
+.payment-missing span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 #order-queue {
   gap: 14px;
 }
@@ -1029,7 +1068,7 @@ code {
 
 #order-queue .summary-panel {
   background:
-    linear-gradient(135deg, rgba(47, 90, 59, 0.94), rgba(59, 112, 75, 0.86)),
+    linear-gradient(135deg, rgba(41, 78, 52, 0.95), rgba(50, 98, 65, 0.87)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 42%);
   color: #fffef8;
 }
@@ -1072,18 +1111,18 @@ code {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 10px;
+  padding: 6px 10px;
 }
 
 #order-queue .summary-card strong {
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 #order-queue .totals-toggle-button {
-  min-height: 40px;
-  margin-top: 8px;
-  padding: 8px 10px;
-  font-size: 0.88rem;
+  min-height: 34px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
 }
 
 #order-queue .totals-dropdown {
@@ -1243,12 +1282,12 @@ code {
 }
 
 #order-entry .panel-heading {
-  gap: 6px;
+  gap: 2px;
 }
 
 #order-entry .menu-jump-bar {
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 #order-entry .menu-jump-button {
@@ -1456,11 +1495,6 @@ code {
   #order-entry {
     gap: 10px;
     padding-bottom: calc(132px + var(--safe-bottom));
-  }
-
-  #order-entry::after {
-    width: calc(100vw - 16px);
-    height: calc(144px + var(--safe-bottom));
   }
 
   #order-entry .screen-panel {

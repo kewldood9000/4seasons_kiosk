@@ -82,7 +82,7 @@ const DEFAULT_MENU_ITEMS = [
   { id: "ginger-almond-milk-tea", category: "Drinks", name: "Ginger Almond Milk Tea", price: 6 },
 ];
 
-const MENU_SECTIONS = ["Plates", "Hot Handhelds", "Hot Wraps", "Cold Wraps", "Drinks"];
+const MENU_SECTIONS = ["Hot Wraps", "Cold Wraps", "Drinks", "Hot Handhelds", "Plates"];
 const WRAP_CATEGORIES = new Set(["Hot Wraps", "Cold Wraps"]);
 const SAUCE_OPTIONS = [
   { id: "peanut", label: "Peanut" },
@@ -99,20 +99,20 @@ const PAYMENT_OPTIONS = [
   {
     id: "venmo-one",
     label: "Shoko Venmo",
-    image: "./payments/venmo-1.svg",
-    alt: "Venmo QR code 1",
+    image: "./shokoVenmo.png",
+    alt: "Shoko Venmo QR code",
   },
   {
     id: "venmo-two",
     label: "Family Venmo",
-    image: "./payments/venmo-2.svg",
-    alt: "Venmo QR code 2",
+    image: "./familyVenmo.png",
+    alt: "Family Venmo QR code",
   },
   {
     id: "zelle",
     label: "Shoko Zelle",
-    image: "./payments/zelle.svg",
-    alt: "Zelle QR code",
+    image: "./shokoZelle.png",
+    alt: "Shoko Zelle QR code",
   },
 ];
 
@@ -235,9 +235,32 @@ function buildEmptyQuantities(menuItems) {
   }, {});
 }
 
+function addPressListener(element, handler) {
+  element.addEventListener("pointerup", (event) => {
+    if (element.disabled) {
+      return;
+    }
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
+    }
+    handler(event);
+  });
+
+  element.addEventListener("keydown", (event) => {
+    if (element.disabled) {
+      return;
+    }
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+    event.preventDefault();
+    handler(event);
+  });
+}
+
 function bindEvents() {
   elements.tabButtons.forEach((button) => {
-    button.addEventListener("click", () => setActiveScreen(button.dataset.screen));
+    addPressListener(button, () => setActiveScreen(button.dataset.screen));
   });
 
   document.addEventListener("click", handleGlobalClick);
@@ -250,10 +273,10 @@ function bindEvents() {
     state.draft.notes = event.target.value;
   });
 
-  elements.reviewOrderButton.addEventListener("click", openReviewSheet);
-  elements.submitOrderButton.addEventListener("click", submitOrder);
-  elements.totalsToggleButton.addEventListener("click", toggleTotalsDropdown);
-  elements.closeReviewButton.addEventListener("click", closeReviewSheet);
+  addPressListener(elements.reviewOrderButton, openReviewSheet);
+  addPressListener(elements.submitOrderButton, submitOrder);
+  addPressListener(elements.totalsToggleButton, toggleTotalsDropdown);
+  addPressListener(elements.closeReviewButton, closeReviewSheet);
   elements.reviewSheetBackdrop.addEventListener("click", closeReviewSheet);
 }
 
@@ -310,7 +333,7 @@ function renderMenu() {
     jumpButton.type = "button";
     jumpButton.className = `menu-jump-button${activeMenuSection === sectionName ? " is-selected" : ""}`;
     jumpButton.textContent = sectionName;
-    jumpButton.addEventListener("click", () => {
+    addPressListener(jumpButton, () => {
       activeMenuSection = activeMenuSection === sectionName ? null : sectionName;
       renderMenu();
     });
@@ -344,12 +367,9 @@ function renderMenu() {
       template.querySelector(".menu-item-price").textContent = formatCurrency(item.price);
       quantityValue.textContent = String(getDisplayedDraftQuantity(item.id));
 
-      decrementButton.addEventListener("click", (event) => {
+      addPressListener(decrementButton, (event) => {
         event.stopPropagation();
         updateDraftQuantity(item.id, -1);
-      });
-      decrementButton.addEventListener("pointerup", (event) => {
-        event.stopPropagation();
       });
 
       card.addEventListener("pointerup", (event) => {
@@ -572,13 +592,13 @@ function renderQueue() {
       itemButton.className = "item-complete-button";
       itemButton.type = "button";
       itemButton.textContent = item.completed ? "Completed" : "Mark Done";
-      itemButton.addEventListener("click", () => toggleItemComplete(order.id, item.id));
+      addPressListener(itemButton, () => toggleItemComplete(order.id, item.id));
 
       listItem.append(itemCopy, itemButton);
       orderItemList.appendChild(listItem);
     });
 
-    sentOutButton.addEventListener("click", (event) => {
+    addPressListener(sentOutButton, (event) => {
       event.stopPropagation();
       markOrderSentOut(order.id);
     });
@@ -779,7 +799,7 @@ function buildItemEditEditor(item) {
       sauceButton.type = "button";
       sauceButton.className = `review-chip${item.sauceIds.includes(sauce.id) ? " is-selected" : ""}`;
       sauceButton.textContent = sauce.label;
-      sauceButton.addEventListener("click", () => toggleDraftItemSauce(item.id, sauce.id));
+      addPressListener(sauceButton, () => toggleDraftItemSauce(item.id, sauce.id));
       sauceRow.appendChild(sauceButton);
     });
 
@@ -787,7 +807,7 @@ function buildItemEditEditor(item) {
     clearSauceButton.type = "button";
     clearSauceButton.className = "review-chip review-chip-clear";
     clearSauceButton.textContent = "Clear Sauces";
-    clearSauceButton.addEventListener("click", () => clearDraftItemSauces(item.id));
+    addPressListener(clearSauceButton, () => clearDraftItemSauces(item.id));
     sauceRow.appendChild(clearSauceButton);
 
     sauceGroup.appendChild(sauceRow);
@@ -829,7 +849,7 @@ function buildItemEditEditor(item) {
           } else {
             presetButton.textContent = buildModifierLabel(preset.label, preset.priceDelta ?? 0);
           }
-          presetButton.addEventListener("click", () => toggleDraftItemModifier(item.id, preset.label));
+          addPressListener(presetButton, () => toggleDraftItemModifier(item.id, preset.label));
           presetRow.appendChild(presetButton);
         });
 
@@ -840,7 +860,7 @@ function buildItemEditEditor(item) {
     clearButton.type = "button";
     clearButton.className = "review-chip review-chip-clear";
     clearButton.textContent = "Clear Edits";
-    clearButton.addEventListener("click", () => clearDraftItemModifiers(item.id));
+    addPressListener(clearButton, () => clearDraftItemModifiers(item.id));
     const clearRow = document.createElement("div");
     clearRow.className = "review-chip-row";
     clearRow.appendChild(clearButton);
@@ -865,7 +885,7 @@ function buildItemEditEditor(item) {
       customChip.type = "button";
       customChip.className = "review-chip is-selected";
       customChip.textContent = modifier;
-      customChip.addEventListener("click", () => toggleDraftItemModifier(item.id, modifier));
+      addPressListener(customChip, () => toggleDraftItemModifier(item.id, modifier));
       customChipRow.appendChild(customChip);
     });
 
@@ -887,7 +907,7 @@ function buildItemEditEditor(item) {
     applyButton.type = "button";
     applyButton.className = "secondary-button review-apply-button";
     applyButton.textContent = "Add";
-    applyButton.addEventListener("click", () => addDraftItemModifier(item.id, customInput.value));
+    addPressListener(applyButton, () => addDraftItemModifier(item.id, customInput.value));
 
     customInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -1079,7 +1099,7 @@ function renderPayments() {
     button.type = "button";
     button.className = `payment-method-button${selectedPaymentId === option.id ? " is-selected" : ""}`;
     button.textContent = option.label;
-    button.addEventListener("click", () => {
+    addPressListener(button, () => {
       selectedPaymentId = selectedPaymentId === option.id ? null : option.id;
       renderPayments();
     });
@@ -1102,9 +1122,19 @@ function renderPayments() {
 
   const card = document.createElement("div");
   card.className = "payment-card";
-  card.innerHTML = `
-    <img src="${selected.image}" alt="${selected.alt}" />
-  `;
+  const image = document.createElement("img");
+  image.src = selected.image;
+  image.alt = selected.alt;
+  image.addEventListener("error", () => {
+    const missingState = document.createElement("div");
+    missingState.className = "payment-missing";
+    missingState.innerHTML = `
+      <strong>Image not found</strong>
+      <span>${escapeHtml(selected.image.replace("./", ""))}</span>
+    `;
+    card.replaceChildren(missingState);
+  });
+  card.appendChild(image);
   elements.paymentDisplay.replaceChildren(card);
 }
 
