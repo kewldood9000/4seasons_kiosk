@@ -591,7 +591,7 @@ function renderQueue() {
       const itemButton = document.createElement("button");
       itemButton.className = "item-complete-button";
       itemButton.type = "button";
-      itemButton.textContent = item.completed ? "Completed" : "Mark Done";
+      itemButton.textContent = item.completed ? "Completed" : "Not Made";
       addPressListener(itemButton, () => toggleItemComplete(order.id, item.id));
 
       listItem.append(itemCopy, itemButton);

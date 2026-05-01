@@ -681,10 +681,16 @@ button {
   min-height: 48px;
   padding: 12px 14px;
   border-radius: 999px;
+  background: rgba(143, 58, 47, 0.26);
+  color: #f0c2ba;
+  border: 1px solid rgba(240, 194, 186, 0.14);
+  font-weight: 700;
+}
+
+.order-item-row.is-complete .item-complete-button {
   background: rgba(53, 105, 71, 0.14);
   color: var(--green);
-  border: 1px solid rgba(185, 221, 192, 0.12);
-  font-weight: 700;
+  border-color: rgba(185, 221, 192, 0.12);
 }
 
 .sent-out-button {
