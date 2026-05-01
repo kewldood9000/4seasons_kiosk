@@ -32,11 +32,7 @@ html {
   height: 100%;
   -webkit-text-size-adjust: 100%;
   color-scheme: dark;
-  background:
-    radial-gradient(circle at top left, rgba(96, 139, 103, 0.2), transparent 26%),
-    radial-gradient(circle at top right, rgba(195, 103, 62, 0.14), transparent 24%),
-    linear-gradient(180deg, #1d1611 0%, var(--bg) 45%, #201813 100%);
-  background-color: #201813;
+  background: #201813;
   overscroll-behavior-y: none;
 }
 
@@ -47,12 +43,7 @@ body {
   color: var(--text);
   line-height: 1.4;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at top left, rgba(96, 139, 103, 0.2), transparent 26%),
-    radial-gradient(circle at top right, rgba(195, 103, 62, 0.14), transparent 24%),
-    linear-gradient(180deg, #1d1611 0%, var(--bg) 45%, #201813 100%);
-  background-color: #201813;
-  background-repeat: no-repeat;
+  background: #201813;
 }
 
 button,
@@ -79,7 +70,7 @@ button {
   margin: 0 auto;
   min-height: 100dvh;
   padding:
-    calc(8px + var(--safe-top))
+    var(--safe-top)
     16px
     calc(24px + var(--safe-bottom));
 }
@@ -114,7 +105,7 @@ button {
 
 .tab-bar {
   position: sticky;
-  top: calc(6px + var(--safe-top));
+  top: var(--safe-top);
   z-index: 10;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1353,7 +1344,7 @@ code {
 #order-entry .sticky-submit {
   position: fixed;
   left: 50%;
-  bottom: calc(10px + var(--safe-bottom));
+  bottom: var(--safe-bottom);
   transform: translateX(-50%);
   width: min(calc(100vw - 32px), 828px);
   max-width: 828px;
@@ -1554,7 +1545,7 @@ code {
 
   #order-entry .sticky-submit {
     left: 50%;
-    bottom: calc(8px + var(--safe-bottom));
+    bottom: var(--safe-bottom);
     transform: translateX(-50%);
     width: calc(100vw - 16px);
     max-width: 844px;
