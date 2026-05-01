@@ -95,6 +95,10 @@ const CATEGORY_ITEM_EDIT_PRESETS = {
   "Cold Wraps": [{ label: "No Cilantro" }],
 };
 
+const GLOBAL_ITEM_EDIT_PRESETS = [{ label: "No Cilantro" }];
+const GLOBAL_ITEM_EDIT_EXCLUDED_IDS = new Set(["summer-rolls"]);
+const GLOBAL_ITEM_EDIT_EXCLUDED_CATEGORIES = new Set(["Drinks"]);
+
 const PAYMENT_OPTIONS = [
   {
     id: "venmo-one",
@@ -582,8 +586,9 @@ function renderQueue() {
       const modifierText = modifierDetails
         .map((modifierDetail) => buildModifierLabel(modifierDetail.label, modifierDetail.priceDelta))
         .join(", ");
+      const hasItemDetails = sauceLabels.length > 0 || Boolean(modifierText);
       itemCopy.innerHTML = `
-        <strong>${item.quantity} x ${escapeHtml(item.name)}</strong>
+        <strong>${item.quantity} x ${escapeHtml(item.name)}${hasItemDetails ? "," : ""}</strong>
         ${sauceLabels.length ? `<span class="item-meta">with ${escapeHtml(sauceLabels.join(", "))}</span>` : ""}
         ${modifierText ? `<span class="item-meta item-modifier-meta">${escapeHtml(modifierText)}</span>` : ""}
       `;
@@ -1229,9 +1234,17 @@ function isWrapCategory(category) {
 
 function getItemEditPresets(item) {
   const menuItem = state.menuItems.find((entry) => entry.id === (item.menuItemId ?? item.id)) ?? item;
+  const globalPresets =
+    !GLOBAL_ITEM_EDIT_EXCLUDED_IDS.has(menuItem?.id) &&
+    !GLOBAL_ITEM_EDIT_EXCLUDED_CATEGORIES.has(menuItem?.category)
+      ? GLOBAL_ITEM_EDIT_PRESETS
+      : [];
   const categoryPresets = CATEGORY_ITEM_EDIT_PRESETS[menuItem?.category ?? item.category] ?? [];
   const itemPresets = menuItem?.itemEditPresets ?? [];
-  return [...categoryPresets, ...itemPresets];
+  return [...globalPresets, ...categoryPresets, ...itemPresets].filter(
+    (preset, index, presets) =>
+      presets.findIndex((entry) => entry.label === preset.label) === index,
+  );
 }
 
 function supportsCustomEdits(item) {
