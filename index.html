@@ -26,21 +26,10 @@
       #order-queue .order-card .item-modifier-meta,
       #order-queue .order-card .order-number,
       #order-queue .order-card .order-title,
-      #order-queue .order-card .order-total-minimal,
       #order-queue .order-card .customer-note-block p {
         color: #f3e8d9 !important;
         opacity: 1 !important;
         text-shadow: none !important;
-      }
-
-      #order-queue .order-card .timestamp-chip {
-        color: #b9ddc0 !important;
-        opacity: 1 !important;
-        text-shadow: none !important;
-      }
-
-      #order-queue .order-card .order-total-minimal {
-        color: #ccb59a !important;
       }
 
       #order-queue .order-card .item-complete-button {
@@ -212,18 +201,15 @@
     <template id="orderCardTemplate">
       <article class="order-card">
         <div class="order-card-top">
-          <div>
+          <div class="order-heading">
             <p class="order-number"></p>
             <h3 class="order-title"></h3>
           </div>
-          <div class="order-meta">
-            <span class="timestamp-chip"></span>
-            <span class="order-total-minimal"></span>
-          </div>
+          <button class="primary-button sent-out-button" type="button">Sent Out</button>
         </div>
         <div class="customer-note-block"></div>
         <ul class="order-item-list"></ul>
-        <button class="primary-button sent-out-button" type="button">Sent Out</button>
+        <p class="queue-order-total"></p>
       </article>
     </template>
 

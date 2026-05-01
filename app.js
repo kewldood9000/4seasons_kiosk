@@ -9,9 +9,9 @@ const DEFAULT_MENU_ITEMS = [
     name: "Pad Thai",
     price: 14,
     itemEditPresets: [
-      { label: "Add Chicken", priceDelta: 3 },
-      { label: "Add Shrimp", priceDelta: 5 },
-      { label: "Add Salmon", priceDelta: 5 },
+      { label: "Add Chicken", priceDelta: 3, row: 1, nowrap: true },
+      { label: "Add Shrimp", priceDelta: 5, row: 1, nowrap: true },
+      { label: "Add Salmon", priceDelta: 5, row: 1, nowrap: true },
     ],
   },
   { id: "rice-and-chicken", category: "Plates", name: "Rice and Chicken", price: 17 },
@@ -24,9 +24,12 @@ const DEFAULT_MENU_ITEMS = [
     name: "Bento Mixed Salad",
     price: 14,
     itemEditPresets: [
-      { label: "Add Chicken", priceDelta: 3 },
-      { label: "Add Shrimp", priceDelta: 5 },
-      { label: "Add Salmon", priceDelta: 5 },
+      { label: "Add Chicken", priceDelta: 3, row: 1, nowrap: true },
+      { label: "Add Shrimp", priceDelta: 5, row: 1, nowrap: true },
+      { label: "Add Salmon", priceDelta: 5, row: 1, nowrap: true },
+      { label: "No Cilantro", row: 2 },
+      { label: "No Noodles", row: 2 },
+      { label: "No Tofu", row: 2 },
     ],
   },
   {
@@ -345,9 +348,15 @@ function renderMenu() {
         event.stopPropagation();
         updateDraftQuantity(item.id, -1);
       });
+      decrementButton.addEventListener("pointerup", (event) => {
+        event.stopPropagation();
+      });
 
       card.addEventListener("pointerup", (event) => {
         if (event.pointerType === "mouse" && event.button !== 0) {
+          return;
+        }
+        if (event.target.closest(".decrement-button")) {
           return;
         }
 
@@ -418,6 +427,7 @@ function updateDraftQuantity(itemId, delta) {
 
 function getDraftItems() {
   const menuItemMap = new Map(state.menuItems.map((item) => [item.id, item]));
+  const menuOrderMap = new Map(state.menuItems.map((item, index) => [item.id, index]));
 
   return Object.entries(state.draft.quantities)
     .filter(([, quantity]) => quantity > 0)
@@ -452,7 +462,19 @@ function getDraftItems() {
         completed: false,
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort((left, right) => {
+      const menuOrderDiff =
+        (menuOrderMap.get(left.menuItemId) ?? Number.MAX_SAFE_INTEGER) -
+        (menuOrderMap.get(right.menuItemId) ?? Number.MAX_SAFE_INTEGER);
+      if (menuOrderDiff !== 0) {
+        return menuOrderDiff;
+      }
+
+      const leftDetailKey = `${left.sauceIds.join("|")}::${left.modifiers.join("|")}`;
+      const rightDetailKey = `${right.sauceIds.join("|")}::${right.modifiers.join("|")}`;
+      return leftDetailKey.localeCompare(rightDetailKey);
+    });
 }
 
 function getDraftTotal() {
@@ -516,21 +538,18 @@ function renderQueue() {
     const notesBlock = template.querySelector(".customer-note-block");
     const orderItemList = template.querySelector(".order-item-list");
     const sentOutButton = template.querySelector(".sent-out-button");
+    const orderTotal = template.querySelector(".queue-order-total");
 
-    template.querySelector(".order-number").textContent = `Order #${order.orderNumber}`;
+    template.querySelector(".order-number").textContent = `Order #${order.orderNumber} at ${formatTime(order.timestamp)}`;
     template.querySelector(".order-title").textContent = order.customerName || "Walk-up Customer";
-    template.querySelector(".timestamp-chip").textContent = formatTime(order.timestamp);
-    template.querySelector(".order-total-minimal").textContent = `Total ${formatCurrency(order.total)}`;
 
     const noteParts = [];
-    if (order.customerName) {
-      noteParts.push(`<p><strong>Customer:</strong> ${escapeHtml(order.customerName)}</p>`);
-    }
     if (order.notes) {
       noteParts.push(`<p><strong>Notes:</strong> ${escapeHtml(order.notes)}</p>`);
     }
     notesBlock.innerHTML = noteParts.join("");
     notesBlock.hidden = noteParts.length === 0;
+    orderTotal.textContent = `Total ${formatCurrency(order.total)}`;
 
     order.items.forEach((item) => {
       const listItem = document.createElement("li");
@@ -540,17 +559,13 @@ function renderQueue() {
       itemCopy.className = "item-copy";
       const sauceLabels = getItemSauceLabels(item);
       const modifierDetails = getModifierDetails(item);
+      const modifierText = modifierDetails
+        .map((modifierDetail) => buildModifierLabel(modifierDetail.label, modifierDetail.priceDelta))
+        .join(", ");
       itemCopy.innerHTML = `
         <strong>${item.quantity} x ${escapeHtml(item.name)}</strong>
         ${sauceLabels.length ? `<span class="item-meta">with ${escapeHtml(sauceLabels.join(", "))}</span>` : ""}
-        ${modifierDetails
-          .map(
-            (modifierDetail) =>
-              `<span class="item-meta item-modifier-meta">${escapeHtml(
-                buildModifierLabel(modifierDetail.label, modifierDetail.priceDelta),
-              )}</span>`,
-          )
-          .join("")}
+        ${modifierText ? `<span class="item-meta item-modifier-meta">${escapeHtml(modifierText)}</span>` : ""}
       `;
 
       const itemButton = document.createElement("button");
@@ -781,29 +796,56 @@ function buildItemEditEditor(item) {
 
   const presets = getItemEditPresets(item);
   if (presets.length > 0) {
-    const presetRow = document.createElement("div");
-    presetRow.className = "review-chip-row";
     const modifierGroup = document.createElement("div");
     modifierGroup.className = "review-editor-group";
     modifierGroup.innerHTML = `<span class="review-editor-label">Item Edit</span>`;
 
+    const presetRows = new Map();
     presets.forEach((preset) => {
-      const presetButton = document.createElement("button");
-      presetButton.type = "button";
-      presetButton.className = `review-chip${item.modifiers.includes(preset.label) ? " is-selected" : ""}`;
-      presetButton.textContent = buildModifierLabel(preset.label, preset.priceDelta ?? 0);
-      presetButton.addEventListener("click", () => toggleDraftItemModifier(item.id, preset.label));
-      presetRow.appendChild(presetButton);
+      const rowKey = String(preset.row ?? 1);
+      if (!presetRows.has(rowKey)) {
+        presetRows.set(rowKey, []);
+      }
+      presetRows.get(rowKey).push(preset);
     });
+
+    Array.from(presetRows.entries())
+      .sort((left, right) => Number(left[0]) - Number(right[0]))
+      .forEach(([, rowPresets]) => {
+        const presetRow = document.createElement("div");
+        presetRow.className = `review-chip-row${rowPresets.some((preset) => preset.nowrap) ? " is-nowrap" : ""}`;
+
+        rowPresets.forEach((preset) => {
+          const presetButton = document.createElement("button");
+          presetButton.type = "button";
+          presetButton.className = `review-chip${item.modifiers.includes(preset.label) ? " is-selected" : ""}`;
+          if (preset.priceDelta) {
+            const labelLine = document.createElement("span");
+            labelLine.textContent = preset.label;
+            const priceLine = document.createElement("span");
+            priceLine.className = "review-chip-subline";
+            priceLine.textContent = `+${formatCurrency(preset.priceDelta)}`;
+            presetButton.append(labelLine, priceLine);
+          } else {
+            presetButton.textContent = buildModifierLabel(preset.label, preset.priceDelta ?? 0);
+          }
+          presetButton.addEventListener("click", () => toggleDraftItemModifier(item.id, preset.label));
+          presetRow.appendChild(presetButton);
+        });
+
+        modifierGroup.appendChild(presetRow);
+      });
 
     const clearButton = document.createElement("button");
     clearButton.type = "button";
     clearButton.className = "review-chip review-chip-clear";
     clearButton.textContent = "Clear Edits";
     clearButton.addEventListener("click", () => clearDraftItemModifiers(item.id));
-    presetRow.appendChild(clearButton);
+    const clearRow = document.createElement("div");
+    clearRow.className = "review-chip-row";
+    clearRow.appendChild(clearButton);
 
-    modifierGroup.appendChild(presetRow);
+    modifierGroup.appendChild(clearRow);
     editor.appendChild(modifierGroup);
   }
 
