@@ -70,7 +70,7 @@ button {
   margin: 0 auto;
   min-height: 100dvh;
   padding:
-    var(--safe-top)
+    calc(var(--safe-top) + 1px)
     16px
     calc(24px + var(--safe-bottom));
 }
@@ -105,7 +105,7 @@ button {
 
 .tab-bar {
   position: sticky;
-  top: var(--safe-top);
+  top: calc(var(--safe-top) + 1px);
   z-index: 10;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1344,7 +1344,7 @@ code {
 #order-entry .sticky-submit {
   position: fixed;
   left: 50%;
-  bottom: var(--safe-bottom);
+  bottom: calc(var(--safe-bottom) + 1px);
   transform: translateX(-50%);
   width: min(calc(100vw - 32px), 828px);
   max-width: 828px;
@@ -1545,7 +1545,7 @@ code {
 
   #order-entry .sticky-submit {
     left: 50%;
-    bottom: var(--safe-bottom);
+    bottom: calc(var(--safe-bottom) + 1px);
     transform: translateX(-50%);
     width: calc(100vw - 16px);
     max-width: 844px;
