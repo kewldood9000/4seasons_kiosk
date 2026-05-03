@@ -2,6 +2,7 @@ const STORAGE_KEY = "market-kiosk-state-v1";
 
 // Edit these sample items to fit your stand's menu.
 const DEFAULT_MENU_ITEMS = [
+  { id: "banh-xeo", category: "Plates", name: "Banh Xeo", price: 17 },
   { id: "lunch-combo", category: "Plates", name: "Lunch Combo", price: 17 },
   {
     id: "pad-thai",
@@ -14,10 +15,6 @@ const DEFAULT_MENU_ITEMS = [
       { label: "Add Salmon", priceDelta: 5, row: 1, nowrap: true },
     ],
   },
-  { id: "rice-and-chicken", category: "Plates", name: "Rice and Chicken", price: 17 },
-  { id: "crab-rice", category: "Plates", name: "Crab Rice", price: 17 },
-  { id: "banh-xeo", category: "Plates", name: "Banh Xeo", price: 17 },
-  { id: "beef-plate", category: "Plates", name: "Beef Plate", price: 17 },
   {
     id: "bento-mixed-salad",
     category: "Plates",
@@ -32,17 +29,20 @@ const DEFAULT_MENU_ITEMS = [
       { label: "No Tofu", row: 2 },
     ],
   },
+  { id: "crab-rice", category: "Plates", name: "Crab Rice", price: 17 },
+  { id: "rice-and-chicken", category: "Plates", name: "Rice and Chicken", price: 17 },
+  { id: "beef-plate", category: "Plates", name: "Beef Plate", price: 17 },
+  {
+    id: "summer-rolls",
+    category: "Hot Handhelds",
+    name: "Summer Rolls",
+    price: 7,
+    allowCustomEdits: false,
+  },
   {
     id: "pork-banh-mi",
     category: "Hot Handhelds",
     name: "Pork Banh Mi",
-    price: 17,
-    itemEditPresets: [{ label: "No Cilantro" }, { label: "Add Siracha" }],
-  },
-  {
-    id: "chicken-banh-mi",
-    category: "Hot Handhelds",
-    name: "Chicken Banh Mi",
     price: 17,
     itemEditPresets: [{ label: "No Cilantro" }, { label: "Add Siracha" }],
   },
@@ -54,11 +54,11 @@ const DEFAULT_MENU_ITEMS = [
     itemEditPresets: [{ label: "No Cilantro" }, { label: "Add Siracha" }],
   },
   {
-    id: "summer-rolls",
+    id: "chicken-banh-mi",
     category: "Hot Handhelds",
-    name: "Summer Rolls",
-    price: 7,
-    allowCustomEdits: false,
+    name: "Chicken Banh Mi",
+    price: 17,
+    itemEditPresets: [{ label: "No Cilantro" }, { label: "Add Siracha" }],
   },
   { id: "chicken-roll", category: "Hot Wraps", name: "Chicken Roll", price: 17 },
   { id: "salmon-roll", category: "Hot Wraps", name: "Salmon Roll", price: 17 },
@@ -137,6 +137,8 @@ const elements = {
   activeOrderCount: document.getElementById("activeOrderCount"),
   totalsToggleButton: document.getElementById("totalsToggleButton"),
   totalsDropdown: document.getElementById("totalsDropdown"),
+  sauceTotalsToggleButton: document.getElementById("sauceTotalsToggleButton"),
+  sauceTotalsDropdown: document.getElementById("sauceTotalsDropdown"),
   paymentButtons: document.getElementById("paymentButtons"),
   paymentDisplay: document.getElementById("paymentDisplay"),
   toast: document.getElementById("toast"),
@@ -152,6 +154,7 @@ const elements = {
 
 let selectedPaymentId = null;
 let isTotalsExpanded = false;
+let isSauceTotalsExpanded = false;
 let activeMenuSection = null;
 let isReviewSheetOpen = false;
 let toastTimer = null;
@@ -280,6 +283,7 @@ function bindEvents() {
   addPressListener(elements.reviewOrderButton, openReviewSheet);
   addPressListener(elements.submitOrderButton, submitOrder);
   addPressListener(elements.totalsToggleButton, toggleTotalsDropdown);
+  addPressListener(elements.sauceTotalsToggleButton, toggleSauceTotalsDropdown);
   addPressListener(elements.closeReviewButton, closeReviewSheet);
   elements.reviewSheetBackdrop.addEventListener("click", closeReviewSheet);
 }
@@ -435,6 +439,10 @@ function updateDraftQuantity(itemId, delta) {
     }
   }
 
+  updateDraftQuantityByKey(draftKey, delta);
+}
+
+function updateDraftQuantityByKey(draftKey, delta) {
   const currentQuantity = state.draft.quantities[draftKey] ?? 0;
   const nextQuantity = Math.max(0, currentQuantity + delta);
 
@@ -442,6 +450,10 @@ function updateDraftQuantity(itemId, delta) {
     delete state.draft.quantities[draftKey];
   } else {
     state.draft.quantities[draftKey] = nextQuantity;
+  }
+
+  if (isReviewSheetOpen && getDraftTotal() <= 0) {
+    isReviewSheetOpen = false;
   }
 
   renderDraft();
@@ -588,9 +600,11 @@ function renderQueue() {
         .join(", ");
       const hasItemDetails = sauceLabels.length > 0 || Boolean(modifierText);
       itemCopy.innerHTML = `
-        <strong>${item.quantity} x ${escapeHtml(item.name)}${hasItemDetails ? "," : ""}</strong>
-        ${sauceLabels.length ? `<span class="item-meta">with ${escapeHtml(sauceLabels.join(", "))}</span>` : ""}
-        ${modifierText ? `<span class="item-meta item-modifier-meta">${escapeHtml(modifierText)}</span>` : ""}
+        <div class="item-main-line">
+          <strong>${item.quantity} x ${escapeHtml(item.name)}${hasItemDetails ? "," : ""}</strong>
+          ${modifierText ? `<span class="item-meta item-modifier-meta">${escapeHtml(modifierText)}</span>` : ""}
+        </div>
+        ${sauceLabels.length ? `<span class="item-meta item-sauce-meta">with ${escapeHtml(sauceLabels.join(", "))}</span>` : ""}
       `;
 
       const itemButton = document.createElement("button");
@@ -723,6 +737,7 @@ function handleGlobalClick(event) {
 function renderSummary() {
   elements.activeOrderCount.textContent = String(state.activeOrders.length);
   renderOutstandingTotals();
+  renderOutstandingSauceTotals();
 }
 
 function renderReviewSheet() {
@@ -750,30 +765,37 @@ function renderReviewSheet() {
     itemCopy.className = "review-item-copy";
     const sauceLabels = getItemSauceLabels(item);
     const modifierDetails = getModifierDetails(item);
-    itemCopy.innerHTML = `
-      <strong>${item.quantity} x ${escapeHtml(item.name)}</strong>
-      ${sauceLabels.length ? `<span>with ${escapeHtml(sauceLabels.join(", "))}</span>` : ""}
-      ${modifierDetails
-        .map(
-          (modifierDetail) =>
-            `<span class="review-item-modifier">${escapeHtml(
-              buildModifierLabel(modifierDetail.label, modifierDetail.priceDelta),
-            )}</span>`,
-        )
-        .join("")}
-    `;
+    const itemTitle = document.createElement("strong");
+    itemTitle.textContent = `${item.quantity} x ${item.name}`;
+    itemCopy.appendChild(itemTitle);
 
-    const itemPrice = document.createElement("span");
-    itemPrice.className = "review-item-price";
-    itemPrice.textContent = formatCurrency((item.price + item.modifierPriceDelta) * item.quantity);
+    if (sauceLabels.length) {
+      const sauceLine = document.createElement("span");
+      sauceLine.textContent = `with ${sauceLabels.join(", ")}`;
+      itemCopy.appendChild(sauceLine);
+    }
 
-    const itemPriceWrap = document.createElement("div");
-    itemPriceWrap.className = "review-item-side";
-    itemPriceWrap.appendChild(itemPrice);
+    modifierDetails.forEach((modifierDetail) => {
+      const modifierLine = document.createElement("span");
+      modifierLine.className = "review-item-modifier";
+      modifierLine.textContent = buildModifierLabel(modifierDetail.label, modifierDetail.priceDelta);
+      itemCopy.appendChild(modifierLine);
+    });
+
+    const itemRemoveButton = document.createElement("button");
+    itemRemoveButton.type = "button";
+    itemRemoveButton.className = "secondary-button review-item-remove";
+    itemRemoveButton.textContent = "-";
+    itemRemoveButton.setAttribute("aria-label", `Remove one ${item.name}`);
+    addPressListener(itemRemoveButton, () => updateDraftQuantityByKey(item.id, -1));
+
+    const itemActionWrap = document.createElement("div");
+    itemActionWrap.className = "review-item-side";
+    itemActionWrap.appendChild(itemRemoveButton);
 
     const topRow = document.createElement("div");
     topRow.className = "review-item-top";
-    topRow.append(itemCopy, itemPriceWrap);
+    topRow.append(itemCopy, itemActionWrap);
     listItem.appendChild(topRow);
 
     const editor = buildItemEditEditor(item);
@@ -834,6 +856,7 @@ function buildItemEditEditor(item) {
       presetRows.get(rowKey).push(preset);
     });
 
+    const renderedPresetRows = [];
     Array.from(presetRows.entries())
       .sort((left, right) => Number(left[0]) - Number(right[0]))
       .forEach(([, rowPresets]) => {
@@ -859,6 +882,7 @@ function buildItemEditEditor(item) {
         });
 
         modifierGroup.appendChild(presetRow);
+        renderedPresetRows.push(presetRow);
       });
 
     const clearButton = document.createElement("button");
@@ -866,11 +890,14 @@ function buildItemEditEditor(item) {
     clearButton.className = "review-chip review-chip-clear";
     clearButton.textContent = "Clear Edits";
     addPressListener(clearButton, () => clearDraftItemModifiers(item.id));
-    const clearRow = document.createElement("div");
-    clearRow.className = "review-chip-row";
-    clearRow.appendChild(clearButton);
-
-    modifierGroup.appendChild(clearRow);
+    if (renderedPresetRows.length > 0) {
+      renderedPresetRows[renderedPresetRows.length - 1].appendChild(clearButton);
+    } else {
+      const clearRow = document.createElement("div");
+      clearRow.className = "review-chip-row";
+      clearRow.appendChild(clearButton);
+      modifierGroup.appendChild(clearRow);
+    }
     editor.appendChild(modifierGroup);
   }
 
@@ -1060,6 +1087,36 @@ function renderOutstandingTotals() {
   elements.totalsDropdown.replaceChildren(list);
 }
 
+function renderOutstandingSauceTotals() {
+  const totals = getOutstandingSauceTotals();
+  elements.sauceTotalsToggleButton.textContent = isSauceTotalsExpanded
+    ? "Hide Total Sauce Counts"
+    : "Show Total Sauce Counts";
+  elements.sauceTotalsToggleButton.disabled = totals.length === 0;
+
+  if (!isSauceTotalsExpanded || totals.length === 0) {
+    elements.sauceTotalsDropdown.hidden = true;
+    elements.sauceTotalsDropdown.replaceChildren();
+    return;
+  }
+
+  const list = document.createElement("ul");
+  list.className = "totals-list";
+
+  totals.forEach((item) => {
+    const row = document.createElement("li");
+    row.className = "totals-row";
+    row.innerHTML = `
+      <span class="totals-item-name">${escapeHtml(item.name)}</span>
+      <strong class="totals-item-count">${item.quantity}</strong>
+    `;
+    list.appendChild(row);
+  });
+
+  elements.sauceTotalsDropdown.hidden = false;
+  elements.sauceTotalsDropdown.replaceChildren(list);
+}
+
 function getOutstandingItemTotals() {
   const totals = new Map();
 
@@ -1069,9 +1126,36 @@ function getOutstandingItemTotals() {
         return;
       }
 
-      const itemLabel = buildPrepLabel(item);
+      const itemLabel = buildOutstandingTotalsLabel(item);
       const existingForLabel = totals.get(itemLabel) ?? 0;
       totals.set(itemLabel, existingForLabel + item.quantity);
+    });
+  });
+
+  return Array.from(totals.entries())
+    .map(([name, quantity]) => ({ name, quantity }))
+    .sort((left, right) => {
+      if (right.quantity !== left.quantity) {
+        return right.quantity - left.quantity;
+      }
+
+      return left.name.localeCompare(right.name);
+    });
+}
+
+function getOutstandingSauceTotals() {
+  const totals = new Map();
+
+  state.activeOrders.forEach((order) => {
+    order.items.forEach((item) => {
+      if (item.completed) {
+        return;
+      }
+
+      const sauceLabels = getItemSauceLabels(item);
+      sauceLabels.forEach((sauceLabel) => {
+        totals.set(sauceLabel, (totals.get(sauceLabel) ?? 0) + item.quantity);
+      });
     });
   });
 
@@ -1094,6 +1178,16 @@ function toggleTotalsDropdown() {
 
   isTotalsExpanded = !isTotalsExpanded;
   renderOutstandingTotals();
+}
+
+function toggleSauceTotalsDropdown() {
+  const totals = getOutstandingSauceTotals();
+  if (totals.length === 0) {
+    return;
+  }
+
+  isSauceTotalsExpanded = !isSauceTotalsExpanded;
+  renderOutstandingSauceTotals();
 }
 
 function renderPayments() {
@@ -1127,6 +1221,17 @@ function renderPayments() {
 
   const card = document.createElement("div");
   card.className = "payment-card";
+  if (selected.id === "zelle") {
+    const zelleInfo = document.createElement("div");
+    zelleInfo.className = "payment-zelle-info";
+    zelleInfo.innerHTML = `
+      <strong>Shoko Hino</strong>
+      <span>408-608-7510</span>
+    `;
+    card.appendChild(zelleInfo);
+  }
+  const imageSlot = document.createElement("div");
+  imageSlot.className = "payment-image-slot";
   const image = document.createElement("img");
   image.src = selected.image;
   image.alt = selected.alt;
@@ -1137,9 +1242,10 @@ function renderPayments() {
       <strong>Image not found</strong>
       <span>${escapeHtml(selected.image.replace("./", ""))}</span>
     `;
-    card.replaceChildren(missingState);
+    imageSlot.replaceChildren(missingState);
   });
-  card.appendChild(image);
+  imageSlot.appendChild(image);
+  card.appendChild(imageSlot);
   elements.paymentDisplay.replaceChildren(card);
 }
 
@@ -1292,6 +1398,15 @@ function buildPrepLabel(item) {
   if (sauceLabels.length) {
     parts.push(`with ${sauceLabels.join(", ")}`);
   }
+  modifierDetails.forEach((modifierDetail) => {
+    parts.push(buildModifierLabel(modifierDetail.label, modifierDetail.priceDelta));
+  });
+  return parts.join(" - ");
+}
+
+function buildOutstandingTotalsLabel(item) {
+  const parts = [item.name];
+  const modifierDetails = getModifierDetails(item);
   modifierDetails.forEach((modifierDetail) => {
     parts.push(buildModifierLabel(modifierDetail.label, modifierDetail.priceDelta));
   });

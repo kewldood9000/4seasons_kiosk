@@ -641,15 +641,25 @@ button {
 }
 
 .item-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.item-main-line {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 8px;
+  gap: 2px 6px;
   min-width: 0;
   align-items: baseline;
 }
 
 .item-copy strong {
   font-size: 1rem;
+}
+
+.item-copy .item-sauce-meta {
+  display: block;
 }
 
 .order-item-row.is-complete .item-copy strong {
@@ -748,7 +758,6 @@ button {
 
 .review-sheet-panel {
   --review-action-width: 92px;
-  --review-price-width: 42px;
   position: absolute;
   left: 50%;
   bottom: 0;
@@ -852,13 +861,18 @@ button {
 
 .review-item-copy {
   display: grid;
-  gap: 2px;
+  gap: 0;
   min-width: 0;
   flex: 1 1 auto;
+  align-content: start;
+  grid-auto-rows: min-content;
 }
 
 .review-item-copy strong {
+  display: block;
+  margin: 0;
   color: var(--text);
+  line-height: 1.05;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -871,18 +885,24 @@ button {
   text-align: right;
 }
 
-.review-item-price {
-  display: inline-flex;
-  justify-content: flex-end;
-  min-width: var(--review-price-width);
-  color: var(--text);
-  text-align: right;
-  white-space: nowrap;
+.review-item-remove {
+  min-height: 34px;
+  min-width: 34px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(159, 59, 46, 0.18);
+  border-color: rgba(159, 59, 46, 0.24);
+  color: var(--danger);
+  font-size: 0.86rem;
+  line-height: 1;
 }
 
 .review-item-copy span {
+  display: block;
+  margin: 0;
   color: var(--muted);
   font-size: 0.84rem;
+  line-height: 1;
 }
 
 .review-item-modifier {
@@ -1034,6 +1054,26 @@ code {
   border: 1px solid rgba(185, 221, 192, 0.12);
 }
 
+.payment-image-slot {
+  display: grid;
+}
+
+.payment-zelle-info {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+}
+
+.payment-zelle-info strong {
+  color: var(--text);
+  font-size: 2rem;
+}
+
+.payment-zelle-info span {
+  color: var(--muted);
+  font-size: 1.8rem;
+}
+
 .payment-missing {
   min-height: 260px;
   display: grid;
@@ -1072,16 +1112,11 @@ code {
 
 #order-queue .summary-panel .section-kicker,
 #order-queue .summary-panel h2,
-#order-queue .summary-panel .summary-card span,
-#order-queue .summary-panel .summary-card strong,
+#order-queue .summary-panel .summary-active-orders,
+#order-queue .summary-panel .summary-active-orders strong,
 #order-queue .summary-panel .totals-row,
 #order-queue .summary-panel .totals-item-count {
   color: inherit;
-}
-
-#order-queue .summary-panel .summary-card {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.1);
 }
 
 #order-queue .summary-panel .totals-toggle-button {
@@ -1099,25 +1134,25 @@ code {
   margin-bottom: 2px;
 }
 
-#order-queue .summary-grid {
-  margin: 4px 0 0;
-}
-
-#order-queue .summary-card {
+#order-queue .summary-panel .panel-heading {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 6px 10px;
+  align-items: center;
 }
 
-#order-queue .summary-card strong {
-  font-size: 1rem;
+#order-queue .summary-active-orders {
+  margin: 0;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+#order-queue .summary-active-orders strong {
+  font-size: 0.96rem;
 }
 
 #order-queue .totals-toggle-button {
   min-height: 34px;
-  margin-top: 6px;
+  margin-top: 4px;
   padding: 6px 10px;
   font-size: 0.82rem;
 }
@@ -1382,6 +1417,13 @@ code {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  #order-queue .summary-panel .panel-heading {
+    display: flex;
+    grid-template-columns: none;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   #order-entry .hero-card h2 {
     font-size: 1rem;
   }
@@ -1566,7 +1608,6 @@ code {
 
   .review-sheet-panel {
     --review-action-width: 84px;
-    --review-price-width: 38px;
     width: 100%;
     gap: 10px;
     padding: 14px 12px calc(14px + var(--safe-bottom));
@@ -1611,7 +1652,7 @@ code {
   }
 
   .review-item-copy strong,
-  .review-item-price {
+  .review-item-remove {
     font-size: 0.9rem;
   }
 
