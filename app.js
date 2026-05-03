@@ -103,19 +103,19 @@ const PAYMENT_OPTIONS = [
   {
     id: "venmo-one",
     label: "Shoko Venmo",
-    image: "./shokoVenmo.png",
+    image: "./payments/shokoVenmo.png",
     alt: "Shoko Venmo QR code",
   },
   {
     id: "venmo-two",
     label: "Family Venmo",
-    image: "./familyVenmo.png",
+    image: "./payments/familyVenmo.png",
     alt: "Family Venmo QR code",
   },
   {
     id: "zelle",
     label: "Shoko Zelle",
-    image: "./shokoZelle.png",
+    image: "./payments/shokoZelle.png",
     alt: "Shoko Zelle QR code",
   },
 ];
