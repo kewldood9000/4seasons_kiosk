@@ -824,8 +824,9 @@ function buildItemEditEditor(item) {
     SAUCE_OPTIONS.forEach((sauce) => {
       const sauceButton = document.createElement("button");
       sauceButton.type = "button";
-      sauceButton.className = `review-chip${item.sauceIds.includes(sauce.id) ? " is-selected" : ""}`;
-      sauceButton.textContent = sauce.label;
+      const sauceCount = getItemSauceCount(item, sauce.id);
+      sauceButton.className = `review-chip${sauceCount > 0 ? " is-selected" : ""}`;
+      sauceButton.textContent = sauceCount > 0 ? `${sauceCount}x ${sauce.label}` : sauce.label;
       addPressListener(sauceButton, () => toggleDraftItemSauce(item.id, sauce.id));
       sauceRow.appendChild(sauceButton);
     });
@@ -1014,9 +1015,7 @@ function toggleDraftItemSauce(draftKey, sauceId) {
     return;
   }
 
-  const nextSauceIds = sauceIds.includes(normalizedSauceId)
-    ? sauceIds.filter((existingSauceId) => existingSauceId !== normalizedSauceId)
-    : [...sauceIds, normalizedSauceId];
+  const nextSauceIds = [...sauceIds, normalizedSauceId];
   moveDraftQuantity(draftKey, buildDraftKey(itemId, nextSauceIds, modifiers));
 }
 
@@ -1152,7 +1151,7 @@ function getOutstandingSauceTotals() {
         return;
       }
 
-      const sauceLabels = getItemSauceLabels(item);
+      const sauceLabels = getItemRawSauceLabels(item);
       sauceLabels.forEach((sauceLabel) => {
         totals.set(sauceLabel, (totals.get(sauceLabel) ?? 0) + item.quantity);
       });
@@ -1429,7 +1428,12 @@ function getModifierPriceDelta(item, modifier) {
   return Number(match?.priceDelta || 0);
 }
 
-function getItemSauceLabels(item) {
+function getItemSauceCount(item, sauceId) {
+  return normalizeSauceIds(item.sauceIds ?? item.sauceId).filter((existingSauceId) => existingSauceId === sauceId)
+    .length;
+}
+
+function getItemRawSauceLabels(item) {
   const labels = item.sauceLabels ?? item.sauceLabel;
   const normalizedLabels = normalizeSelectionList(labels);
   if (normalizedLabels.length > 0) {
@@ -1439,6 +1443,10 @@ function getItemSauceLabels(item) {
   return normalizeSauceIds(item.sauceIds ?? item.sauceId)
     .map((sauceId) => SAUCE_OPTIONS.find((option) => option.id === sauceId)?.label ?? "")
     .filter(Boolean);
+}
+
+function getItemSauceLabels(item) {
+  return summarizeRepeatedLabels(getItemRawSauceLabels(item));
 }
 
 function buildModifierLabel(modifier, modifierPriceDelta = 0) {
@@ -1469,19 +1477,22 @@ function normalizeSelectionList(value) {
 }
 
 function normalizeSauceIds(values) {
-  const uniqueSauceIds = Array.from(
-    new Set(
-      normalizeSelectionList(values).filter((value) =>
-        SAUCE_OPTIONS.some((option) => option.id === value),
-      ),
-    ),
-  );
-
-  return uniqueSauceIds.sort(
+  return normalizeSelectionList(values)
+    .filter((value) => SAUCE_OPTIONS.some((option) => option.id === value))
+    .sort(
     (left, right) =>
       SAUCE_OPTIONS.findIndex((option) => option.id === left) -
       SAUCE_OPTIONS.findIndex((option) => option.id === right),
   );
+}
+
+function summarizeRepeatedLabels(labels) {
+  const counts = new Map();
+  labels.forEach((label) => {
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  });
+
+  return Array.from(counts.entries()).map(([label, count]) => (count > 1 ? `${count}x ${label}` : label));
 }
 
 function normalizeModifiers(values) {
